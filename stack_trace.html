@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Paul Brian - Software Build - stack_trace</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <style>
+  blockquote {
+  margin-right:40%;
+  }
+  .edit {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .issues {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .toc {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .href {
+  text-decoration:none;
+  font-variant:small-caps;
+  }
+  .monospace {
+  font-family:monospace;
+  }
+  .caps {
+  font-variant:small-caps;
+  }
+  .bold {
+  font-weight:bold;
+  }
+  .italic {
+  font-style:italic;
+  }
+  .red {
+  color: red;
+  font-weight: bold;
+  }
+  .sourceCode .fasm  .dv{
+  color: black;
+  }
+  .blue {
+  color: blue;
+  }
+  .sourceCode {
+  font-weight: bold;
+  }
+  </style>
+</head>
+<body>
+<h2 id="stack-trace-edit-wiki-report-a-bug-table-of-contents">Stack Trace <a href="https://github.com/paul-brian-software-build/c/edit/master/stack_trace.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
+<p>From <span class="caps">gcc Version 7.3.0 manual</span>:</p>
+<div class="sourceCode"><table class="sourceCode man numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="sourceCode"><pre><code class="sourceCode">&#39;-fomit-frame-pointer&#39;
+     Don&#39;t keep the frame pointer in a register for functions that don&#39;t
+     need one.  This avoids the instructions to save, set up and restore
+     frame pointers; it also makes an extra register available in many
+     functions.  *It also makes debugging impossible on some machines.*
+
+     ...
+
+     The default setting (when not optimizing for size) for 32-bit
+     GNU/Linux x86 and 32-bit Darwin x86 targets is
+     &#39;-fomit-frame-pointer&#39;.  You can configure GCC with the
+     &#39;--enable-frame-pointer&#39; configure option to change the default.
+
+     Enabled at levels &#39;-O&#39;, &#39;-O2&#39;, &#39;-O3&#39;, &#39;-Os&#39;.</code></pre></td></tr></table></div>
+<p>The <span class="italic">stack-frame-pointer</span> is a life-saver when chasing after elusive bugs, espeically when the execution path is not straight-forward.</p>
+<p>Be it, recursive functions or unexpected jumps, dumping the stack frame, helps to visualize, as well as profile the weakest links in your program.</p>
+<p>A very simple example, is tracing file redirection in <code class="sourceCode bash"><span class="fu">sh</span></code>.</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="fu">sh</span> -c <span class="st">&#39;exec &gt;/tmp/output&#39;</span></code></pre></td></tr></table></div>
+<p>We get the following call-trace, where the stack grows downward.</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c">[<span class="dv">7</span>]  main          +<span class="dv">441</span>
+[<span class="dv">6</span>]  cmdloop       +<span class="dv">371</span>
+[<span class="dv">5</span>]  evaltree      +<span class="dv">135</span>
+[<span class="dv">4</span>]  evalcommand   +<span class="dv">453</span>
+[<span class="dv">3</span>]  redirectsafe  +<span class="dv">198</span>
+[<span class="dv">2</span>]  redirect      +<span class="dv">113</span>
+[<span class="dv">1</span>]  openredirect  +<span class="dv">124</span></code></pre></td></tr></table></div>
+<p>Chasing after <code class="sourceCode gnuassembler">redirect +<span class="dv">113</span></code>, we have:</p>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">000000000040ebf0 &lt;redirect&gt;<span class="kw">:</span></code></pre></td></tr></table></div>
+<p>We then calculate the frame-pointer:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0x40ebf0 + 113<span class="va">))</span>
+<span class="ex">40ec61</span></code></pre></td></tr></table></div>
+<p>And we can confirm, that <span class="italic">40ec61</span> is the next instruction on the <code class="sourceCode c">redirect()</code> <span class="italic">stack-frame</span>, right after the <code class="sourceCode c">openredirect()</code> function-call.</p>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">  <span class="kw">40ec5c:</span>       e8 bf fa ff ff          callq  40e720 &lt;openredirect&gt;
+  <span class="kw">40ec61:</span>       <span class="dv">83</span> f8 ff                cmp    $0xffffffff,%eax</code></pre></td></tr></table></div>
+<p>For a more useful example, we demonstrate one of the many pitfalls in <span class="italic">posix</span> shells:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="kw">{</span> <span class="va">var=</span>value; <span class="fu">true</span><span class="kw">;</span> <span class="kw">}</span> <span class="kw">|</span> <span class="fu">true</span>
+$ <span class="bu">echo</span> <span class="st">&#39;var is: &#39;&quot;</span><span class="va">$var</span><span class="st">&quot;</span>
+<span class="ex">var</span> is: 
+
+$ <span class="kw">{</span> <span class="va">var=</span>value; <span class="fu">true</span><span class="kw">;</span> <span class="kw">}</span>
+$ <span class="bu">echo</span> <span class="st">&#39;var is: &#39;&quot;</span><span class="va">$var</span><span class="st">&quot;</span>
+<span class="ex">var</span> is: value</code></pre></td></tr></table></div>
+<p>Enter the call-trace, but not before we examine yet another example:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="kw">(</span> <span class="va">var=</span>value; <span class="fu">true</span> <span class="kw">)</span> <span class="kw">|</span> <span class="fu">true</span>
+$ <span class="bu">echo</span> <span class="st">&#39;var is: &#39;&quot;</span><span class="va">$var</span><span class="st">&quot;</span>
+<span class="ex">var</span> is:</code></pre></td></tr></table></div>
+<p>The striking similiarity between sub-shells and pipes, is evident.</p>
+<p>Let see the respective dumps of the processes envolved, where each dump is headed by each process id, <span class="italic">pid</span>.</p>
+<p>We shell explore the similarity between sub-shells and pipes:</p>
+<p>Stack trace for &quot;<code class="sourceCode bash"><span class="kw">{</span> <span class="va">var=</span>value; <span class="fu">true</span><span class="kw">;</span> <span class="kw">}</span> <span class="kw">|</span> <span class="fu">true</span></code>&quot;:</p>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9439</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+evalpipe                     +<span class="dv">468</span>       [<span class="dv">2</span>]
+evaltree                     +<span class="dv">167</span>       [<span class="dv">3</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">4</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">5</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+var <span class="kw">is:</span> 
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]</code></pre></td></tr></table></div>
+<p>Stack trace for &quot;<code class="sourceCode bash"><span class="kw">{</span> <span class="va">var=</span>value; <span class="fu">true</span><span class="kw">;</span> <span class="kw">}</span></code>&quot;:</p>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+evaltree                     +<span class="dv">299</span>       [<span class="dv">2</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">3</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">4</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+evaltree                     +<span class="dv">167</span>       [<span class="dv">2</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">3</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">4</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+var <span class="kw">is:</span> value
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]</code></pre></td></tr></table></div>
+<p>Stack trace for &quot;<code class="sourceCode bash"><span class="kw">(</span> <span class="va">var=</span>value; <span class="fu">true</span> <span class="kw">)</span> <span class="kw">|</span> <span class="fu">true</span></code>&quot;:</p>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]
+
+stack dump for pid [<span class="dv">9441</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+evalpipe                     +<span class="dv">468</span>       [<span class="dv">2</span>]
+evaltree                     +<span class="dv">167</span>       [<span class="dv">3</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">4</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">5</span>]
+
+stack dump for pid [<span class="dv">9436</span>]<span class="kw">:</span>
+
+evaltree                     +<span class="dv">60</span>        [<span class="dv">1</span>]
+cmdloop                      +<span class="dv">355</span>       [<span class="dv">2</span>]
+main                         +<span class="dv">441</span>       [<span class="dv">3</span>]</code></pre></td></tr></table></div>
+<p><span id="tmp"></span></p>
+</body>
+</html>

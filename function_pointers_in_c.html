@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Paul Brian - Software Build - function_pointers_in_c</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <style>
+  blockquote {
+  margin-right:40%;
+  }
+  .edit {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .issues {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .toc {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .href {
+  text-decoration:none;
+  font-variant:small-caps;
+  }
+  .monospace {
+  font-family:monospace;
+  }
+  .caps {
+  font-variant:small-caps;
+  }
+  .bold {
+  font-weight:bold;
+  }
+  .italic {
+  font-style:italic;
+  }
+  .red {
+  color: red;
+  font-weight: bold;
+  }
+  .sourceCode .fasm  .dv{
+  color: black;
+  }
+  .blue {
+  color: blue;
+  }
+  .sourceCode {
+  font-weight: bold;
+  }
+  </style>
+</head>
+<body>
+<h2 id="function-pointers-in-c-edit-wiki-report-a-bug-table-of-contents">Function pointers in c <a href="https://github.com/paul-brian-software-build/c/edit/master/function_pointers_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
+<p>Function pointers are very useful for <span class="italic">generic programming</span> in c.</p>
+<p>A typical example is the qsort() prototype in libc:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">extern</span> <span class="dt">void</span> qsort(<span class="dt">void</span> *__base, <span class="dt">size_t</span> __nmemb, <span class="dt">size_t</span> __size, __compar_fn_t __compar) __nonnull((<span class="dv">1</span>, <span class="dv">4</span>));</code></pre></td></tr></table></div>
+<p>Where <code class="sourceCode c">__compar_fn_t</code> is defined as:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">typedef</span> <span class="dt">int</span> (*__compar_fn_t) (<span class="dt">const</span> <span class="dt">void</span> *, <span class="dt">const</span> <span class="dt">void</span> *);</code></pre></td></tr></table></div>
+<p>By providing a callback function <code class="sourceCode c">__compar_fn_t</code> to the <code class="sourceCode c">qsort()</code> function, you can pass in any data structure you can imagine, be it a <span class="italic">scalar</span> or an <span class="italic">aggregate</span> type, specifying its size and the number of elements and have it sorted.</p>
+<p>Another example is the revolutionary unix convention that <span class="italic">everything is a file</span>, that allows you to <code class="sourceCode c">read()</code> , <code class="sourceCode c">write()</code> etc. to and from a <span class="italic">regular</span> file as well as a <span class="italic">pipe</span> or a <span class="italic">socket</span> and so on, by allowing any file-system that implements that following (and more) file-pointers to assume the functionality of a &quot;normal&quot; file-system.</p>
+<p>From <span class="bold">include/linux/fs.h</span>:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">struct</span> file_operations {
+        <span class="kw">struct</span> module *owner;
+        loff_t (*llseek) (<span class="kw">struct</span> file *, loff_t, <span class="dt">int</span>);
+        <span class="dt">ssize_t</span> (*read) (<span class="kw">struct</span> file *, <span class="dt">char</span> __user *, <span class="dt">size_t</span>, loff_t *);
+        <span class="dt">ssize_t</span> (*write) (<span class="kw">struct</span> file *, <span class="dt">const</span> <span class="dt">char</span> __user *, <span class="dt">size_t</span>, loff_t *);
+        <span class="dt">ssize_t</span> (*read_iter) (<span class="kw">struct</span> kiocb *, <span class="kw">struct</span> iov_iter *);
+        <span class="dt">ssize_t</span> (*write_iter) (<span class="kw">struct</span> kiocb *, <span class="kw">struct</span> iov_iter *);
+        <span class="dt">int</span> (*iterate) (<span class="kw">struct</span> file *, <span class="kw">struct</span> dir_context *);
+        <span class="dt">int</span> (*iterate_shared) (<span class="kw">struct</span> file *, <span class="kw">struct</span> dir_context *);
+        __poll_t (*poll) (<span class="kw">struct</span> file *, <span class="kw">struct</span> poll_table_struct *);
+        <span class="dt">long</span> (*unlocked_ioctl) (<span class="kw">struct</span> file *, <span class="dt">unsigned</span> <span class="dt">int</span>, <span class="dt">unsigned</span> <span class="dt">long</span>);
+        <span class="dt">long</span> (*compat_ioctl) (<span class="kw">struct</span> file *, <span class="dt">unsigned</span> <span class="dt">int</span>, <span class="dt">unsigned</span> <span class="dt">long</span>);
+        <span class="dt">int</span> (*mmap) (<span class="kw">struct</span> file *, <span class="kw">struct</span> vm_area_struct *);
+        <span class="dt">unsigned</span> <span class="dt">long</span> mmap_supported_flags;
+        <span class="dt">int</span> (*open) (<span class="kw">struct</span> inode *, <span class="kw">struct</span> file *);
+        <span class="dt">int</span> (*flush) (<span class="kw">struct</span> file *, fl_owner_t id);
+        <span class="dt">int</span> (*release) (<span class="kw">struct</span> inode *, <span class="kw">struct</span> file *);
+        <span class="dt">int</span> (*fsync) (<span class="kw">struct</span> file *, loff_t, loff_t, <span class="dt">int</span> datasync);
+        <span class="dt">int</span> (*fasync) (<span class="dt">int</span>, <span class="kw">struct</span> file *, <span class="dt">int</span>);
+        <span class="dt">int</span> (*lock) (<span class="kw">struct</span> file *, <span class="dt">int</span>, <span class="kw">struct</span> file_lock *);
+        <span class="dt">ssize_t</span> (*sendpage) (<span class="kw">struct</span> file *, <span class="kw">struct</span> page *, <span class="dt">int</span>, <span class="dt">size_t</span>, loff_t *, <span class="dt">int</span>);
+        <span class="dt">unsigned</span> <span class="dt">long</span> (*get_unmapped_area)(<span class="kw">struct</span> file *, <span class="dt">unsigned</span> <span class="dt">long</span>, <span class="dt">unsigned</span> <span class="dt">long</span>, <span class="dt">unsigned</span> <span class="dt">long</span>, <span class="dt">unsigned</span> <span class="dt">long</span>);
+        <span class="dt">int</span> (*check_flags)(<span class="dt">int</span>);
+        <span class="dt">int</span> (*flock) (<span class="kw">struct</span> file *, <span class="dt">int</span>, <span class="kw">struct</span> file_lock *);
+        <span class="dt">ssize_t</span> (*splice_write)(<span class="kw">struct</span> pipe_inode_info *, <span class="kw">struct</span> file *, loff_t *, <span class="dt">size_t</span>, <span class="dt">unsigned</span> <span class="dt">int</span>);
+        <span class="dt">ssize_t</span> (*splice_read)(<span class="kw">struct</span> file *, loff_t *, <span class="kw">struct</span> pipe_inode_info *, <span class="dt">size_t</span>, <span class="dt">unsigned</span> <span class="dt">int</span>);
+        <span class="dt">int</span> (*setlease)(<span class="kw">struct</span> file *, <span class="dt">long</span>, <span class="kw">struct</span> file_lock **, <span class="dt">void</span> **);
+        <span class="dt">long</span> (*fallocate)(<span class="kw">struct</span> file *file, <span class="dt">int</span> mode, loff_t offset,
+                          loff_t len);
+        <span class="dt">void</span> (*show_fdinfo)(<span class="kw">struct</span> seq_file *m, <span class="kw">struct</span> file *f);
+<span class="pp">#ifndef CONFIG_MMU</span>
+        <span class="dt">unsigned</span> (*mmap_capabilities)(<span class="kw">struct</span> file *);
+<span class="pp">#endif</span>
+        <span class="dt">ssize_t</span> (*copy_file_range)(<span class="kw">struct</span> file *, loff_t, <span class="kw">struct</span> file *,
+                        loff_t, <span class="dt">size_t</span>, <span class="dt">unsigned</span> <span class="dt">int</span>);
+        <span class="dt">int</span> (*clone_file_range)(<span class="kw">struct</span> file *, loff_t, <span class="kw">struct</span> file *, loff_t,
+                        u64);
+        <span class="dt">ssize_t</span> (*dedupe_file_range)(<span class="kw">struct</span> file *, u64, u64, <span class="kw">struct</span> file *,
+                        u64);
+} __randomize_layout;</code></pre></td></tr></table></div>
+<p>One of the pitfalls of a function-pointers is the very important distinction between the <span class="italic">fucntion</span> itself and its <span class="italic">pointer</span></p>
+<p>There is a major difference between:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="co">// Not a valid pointer to a main() function</span>
+<span class="kw">typedef</span> <span class="dt">int</span> *main_p(<span class="dt">int</span> argc, <span class="dt">char</span> **argv);</code></pre></td></tr></table></div>
+<p>and:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="co">// Valid pointer to a main() fucntion</span>
+<span class="kw">typedef</span> <span class="dt">int</span> (*main_p)(<span class="dt">int</span> argc, <span class="dt">char</span> **argv);</code></pre></td></tr></table></div>
+<p>Let's take for example, the following 2 files.</p>
+<p>We will compile <span class="italic">main.c</span> and <span class="italic">func.c</span>, where <code class="sourceCode c">main()</code> will call <code class="sourceCode c">g()</code> defined in <span class="italic">func.c</span> and declared in <span class="italic">main.c</span>.</p>
+<p>We will first use the wrong declaration for a pointer to <code class="sourceCode c">g()</code>.</p>
+<p><span class="bold">main.c</span>:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="co">// Wrong declation of @fp, the function pointer.</span>
+<span class="kw">typedef</span> <span class="dt">int</span> *fp_type(<span class="dt">void</span>);
+fp_type g;
+<span class="dt">int</span> main()
+{
+        g();
+        <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></td></tr></table></div>
+<p><span class="bold">func.c</span>:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="dt">int</span> func()
+{
+        <span class="cf">return</span> <span class="dv">0</span>;
+}
+__typeof__(func) *g = &amp;func;</code></pre></td></tr></table></div>
+<p>We get:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="fu">gcc</span> -Wall main.c func.c -o a.out <span class="kw">&amp;&amp;</span> <span class="ex">./a.out</span>
+<span class="ex">Segmentation</span> fault      (core dumped)</code></pre></td></tr></table></div>
+<p>So, we have to inspect the executable to see what went wrong.</p>
+<p>Running: <code class="sourceCode bash"><span class="ex">objdump</span> -d a.out <span class="kw">|</span> <span class="fu">grep</span> -A5 <span class="st">&#39;main&gt;:&#39;</span></code>, we have:</p>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"><span class="dv">0000000000000570</span> &lt;main&gt;<span class="kw">:</span>
+ <span class="kw">570:</span>   <span class="dv">48</span> <span class="dv">83</span> ec <span class="dv">08</span>             sub    $0x8,%rsp
+ <span class="kw">574:</span>   e8 <span class="dv">97</span> 0a <span class="dv">20</span> <span class="dv">00</span>          callq  <span class="dv">201010</span> &lt;g&gt;
+ <span class="kw">579:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">57b:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">57f:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>We have in line 8:</p>
+<div style="white-space: pre-line;">                 <code class="sourceCode c"><span class="dv">574</span>:        e8 <span class="dv">97</span> 0a <span class="dv">20</span> <span class="dv">00</span>          callq  <span class="dv">201010</span> &lt;g&gt;</code></div>
+<p>The <span class="italic">e8</span> opcode is defined in <span class="bold">Intel's Software Documentation Manual</span> (Vol. 2A 3-123):</p>
+<div style="white-space: pre-line;">      <code class="sourceCode gnuassembler">E8 cd  CALL rel32      Call near, relative, displacement relative to next instruction</code></div>
+<p>This <span class="italic">rel32</span> is defined as:</p>
+<blockquote>
+<p><span class="caps">&quot;A relative offset (rel16 or rel32) is generally specified as a label in assembly code. But at the machine code level, it is encoded as a signed, 16- or 32-bit immediate value. This value is added to the value in the EIP(RIP) register. In 64-bit mode the relative offset is always a 32-bit immediate value which is sign extended to 64-bits before it is added to the value in the RIP register for the target calculation.&quot;</span></p>
+</blockquote>
+<p>On this logic, we can obtain from the following line:</p>
+<div style="white-space: pre-line;">                 <code class="sourceCode c"><span class="dv">574</span>:        e8 <span class="dv">97</span> 0a <span class="dv">20</span> <span class="dv">00</span>          callq  <span class="dv">201010</span> &lt;g&gt;</code></div>
+<p>and with the proper arithmetic, we reach the desired call target:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0x579 + 0x200a97<span class="va">))</span>
+<span class="ex">201010</span></code></pre></td></tr></table></div>
+<p>We grep now for <code class="sourceCode c"><span class="bn">0x201010</span></code> in the executable:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">    $ <span class="ex">readelf</span> -aW a.out <span class="kw">|</span> <span class="fu">grep</span> -A1 <span class="st">&#39;201010&#39;</span>
+    <span class="ex">58</span>: 0000000000201010     8 OBJECT  GLOBAL DEFAULT   23 g
+    <span class="ex">59</span>: 0000000000201018     0 NOTYPE  GLOBAL DEFAULT   24 __bss_start</code></pre></td></tr></table></div>
+<p>So, we see that target call, where the executable will jump to is an object of size 8, where immediately follows the <span class="italic">bss</span> section.</p>
+<p>Certainly, not a valid section to load the next instructions, so what is going on.</p>
+<p>Let's fix the bug above in <span class="bold">main.c</span>, as the following:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">typedef</span> <span class="dt">int</span> (*fp_type)(<span class="dt">void</span>);
+fp_type g;
+<span class="dt">int</span> main()
+{
+        g();
+        <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></td></tr></table></div>
+<p>Now, inspect the call target:</p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="fu">gcc</span> -Wall main.c func.c -o a.out
+$ <span class="ex">objdump</span> -d a.out <span class="kw">|</span> <span class="fu">grep</span> -A5 <span class="st">&#39;main&gt;:&#39;</span></code></pre></td></tr></table></div>
+<p>and we get a <span class="bold">very different</span> call opcode:</p>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"><span class="dv">0000000000000570</span> &lt;main&gt;<span class="kw">:</span>
+ <span class="kw">570:</span>   <span class="dv">48</span> <span class="dv">83</span> ec <span class="dv">08</span>             sub    $0x8,%rsp
+ <span class="kw">574:</span>   ff <span class="dv">15</span> <span class="dv">96</span> 0a <span class="dv">20</span> <span class="dv">00</span>       callq  *<span class="bn">0x200a96</span>(%rip)        <span class="co"># 201010 &lt;g&gt;</span>
+ <span class="kw">57a:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">57c:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">580:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>No longer is it a relative offset to g, but it is an indirect absolute address at g.</p>
+<p>Which is exactly the definition a pointer function.</p>
+<p>The same logic applies to array pointers, in the following concepts</p>
+<ul>
+<li>array pointers, i.e. a pointer to an array</li>
+<li>array of pointers</li>
+</ul>
+<p>Which should be treated as 2 <span class="bold">different</span> species.</p>
+<p>Implementing them in source code, we do:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">typedef</span> <span class="dt">char</span> table_t[<span class="dv">2</span>][<span class="dv">4</span>];
+<span class="kw">typedef</span> <span class="dt">char</span> (*line_t)[<span class="dv">4</span>];
+<span class="kw">typedef</span> <span class="dt">char</span> *array[<span class="dv">4</span>];</code></pre></td></tr></table></div>
+<p>On the 1st line we have a definition of a multi-dimensional array.</p>
+<p>In this case, we have a table of 2 lines and 4 columns.</p>
+<p>To get a pointer to each individual line - an array of 4 bytes - we do:</p>
+<div style="white-space: pre-line;">       <code class="sourceCode c"><span class="kw">typedef</span> <span class="dt">char</span> (*line_t)[<span class="dv">4</span>];</code></div>
+<p>And then we can assign it a value, by:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c">table_t table;
+line_t line;
+<span class="er"># Get the pointer to the first slot of the array.</span>
+line = table;</code></pre></td></tr></table></div>
+<p>If we will try erroneously, to assign:</p>
+<div style="white-space: pre-line;">         <code class="sourceCode c">array_t array = table;</code></div>
+<p>and compile, we will get:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c">$ gcc -Wall -c main.c
+main.c: error: invalid initializer
+  array_t line = table[<span class="dv">0</span>];
+                 ^~~~~</code></pre></td></tr></table></div>
+<p>A more intricate example from <span class="caps">ansi c (3.5.4.3 &quot;Function declarators&quot;)</span>:</p>
+<div style="white-space: pre-line;">        <code class="sourceCode c"><span class="dt">int</span> (*fpfi(<span class="dt">int</span> (*)(<span class="dt">long</span>), <span class="dt">int</span>))(<span class="dt">int</span>, ...);</code></div>
+<p>Here we have a function type definition <span class="italic">fpfi</span>, which:</p>
+<ul>
+<li>has the following parameters:
+<ul>
+<li><code class="sourceCode c">fpfi(<span class="dt">int</span> (*)(<span class="dt">long</span>), <span class="dt">int</span>)</code>, which are 2 parameters:
+<ul>
+<li>Parameter 1: <code class="sourceCode c"><span class="dt">int</span> (*)(<span class="dt">long</span>)</code>, a function pointer returning <code class="sourceCode c"><span class="dt">int</span></code>.</li>
+<li>Parameter 2: an <code class="sourceCode c"><span class="dt">int</span></code></li>
+</ul></li>
+</ul></li>
+<li>Returns a pointer to a function, that:
+<ul>
+<li>Has the following parameters:
+<ul>
+<li>Parameter 1: <code class="sourceCode c"><span class="dt">int</span></code></li>
+<li>Unspecified number of additional parameters</li>
+</ul></li>
+<li>Returns an <code class="sourceCode c"><span class="dt">int</span></code>.</li>
+</ul></li>
+</ul>
+</body>
+</html>

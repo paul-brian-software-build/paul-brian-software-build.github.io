@@ -1,0 +1,392 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Paul Brian - Software Build - switch_vs_if_else_statement_in_c</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <style>
+  blockquote {
+  margin-right:40%;
+  }
+  .edit {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .issues {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .toc {
+  text-decoration:none;
+  font-variant:small-caps;
+  font-size:80%;
+  color:gray;
+  }
+  .href {
+  text-decoration:none;
+  font-variant:small-caps;
+  }
+  .monospace {
+  font-family:monospace;
+  }
+  .caps {
+  font-variant:small-caps;
+  }
+  .bold {
+  font-weight:bold;
+  }
+  .italic {
+  font-style:italic;
+  }
+  .red {
+  color: red;
+  font-weight: bold;
+  }
+  .sourceCode .fasm  .dv{
+  color: black;
+  }
+  .blue {
+  color: blue;
+  }
+  .sourceCode {
+  font-weight: bold;
+  }
+  </style>
+</head>
+<body>
+<h2 id="switch-vs-if-else-conditionals-in-c-edit-wiki-report-a-bug-table-of-contents">Switch vs if-else conditionals in C <a href="https://github.com/paul-brian-software-build/c/edit/master/switch_vs_if_else_statement_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
+<p>From <span class="caps">ansi c 3.6.4.2 &quot;The switch statement&quot;</span></p>
+<blockquote>
+<p><span class="caps">&quot;The controlling expression of a switch statement shall have integral type. The expression of each case label shall be an <span class="bold">integral constant expression</span>. No two of the case constant expressions in the same switch statement shall have the same value after conversion. There may be at most one default label in a switch statement. (Any enclosed switch statement may have a default label or case constant expressions with values that duplicate case constant expressions in the enclosing switch statement.)&quot;</span></p>
+</blockquote>
+<p>While very limiting, the restriction on constant type expression in <code class="sourceCode c"><span class="cf">case</span></code> labels for the <code class="sourceCode c"><span class="cf">switch</span></code> statements in C, guarantees a huge performance boost for the compiled program.</p>
+<p>The following if-else statement:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="dt">void</span> func(<span class="dt">unsigned</span> <span class="dt">long</span> a) {
+        <span class="cf">if</span> (a == <span class="dv">1</span>) {
+                a1();
+        } <span class="cf">else</span> <span class="cf">if</span> (a == <span class="dv">2</span>) {
+                a2();
+        } <span class="cf">else</span> <span class="cf">if</span> (a == <span class="dv">3</span>) {
+                a3();
+        } <span class="cf">else</span> <span class="cf">if</span> (a == <span class="dv">4</span>) {
+                a4();
+        } <span class="cf">else</span> <span class="cf">if</span> (a == <span class="dv">5</span>) {
+                a5();
+        } <span class="cf">else</span> {
+                a_default();
+        }
+}</code></pre></td></tr></table></div>
+<p>When compiled, we have:</p>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"><span class="dv">0000000000000620</span> &lt;func&gt;<span class="kw">:</span>
+ <span class="kw">620:</span>   <span class="dv">48</span> <span class="dv">83</span> ec <span class="dv">08</span>             sub    $0x8,%rsp
+ <span class="kw">624:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">626:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">01</span>             cmp    $0x1,%rdi
+ <span class="kw">62a:</span>   <span class="dv">74</span> <span class="dv">34</span>                   je     <span class="dv">660</span> &lt;func+<span class="bn">0x40</span>&gt;
+ <span class="kw">62c:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">02</span>             cmp    $0x2,%rdi
+ <span class="kw">630:</span>   <span class="dv">74</span> 3e                   je     <span class="dv">670</span> &lt;func+<span class="bn">0x50</span>&gt;
+ <span class="kw">632:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">03</span>             cmp    $0x3,%rdi
+ <span class="kw">636:</span>   <span class="dv">74</span> <span class="dv">58</span>                   je     <span class="dv">690</span> &lt;func+<span class="bn">0x70</span>&gt;
+ <span class="kw">638:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">04</span>             cmp    $0x4,%rdi
+ <span class="kw">63c:</span>   <span class="dv">74</span> <span class="dv">12</span>                   je     <span class="dv">650</span> &lt;func+<span class="bn">0x30</span>&gt;
+ <span class="kw">63e:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">05</span>             cmp    $0x5,%rdi
+ <span class="kw">642:</span>   <span class="dv">74</span> 3c                   je     <span class="dv">680</span> &lt;func+<span class="bn">0x60</span>&gt;
+ <span class="kw">644:</span>   e8 b7 <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  <span class="dv">700</span> &lt;a_default&gt;
+ <span class="kw">649:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">64b:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">64f:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Quite a tedious branching decision where the cmp <span class="italic">opcode</span> had to be repeated for every single case:</p>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">626:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">01</span>             cmp    $0x1,%rdi
+...
+ <span class="kw">62c:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">02</span>             cmp    $0x2,%rdi
+...
+ <span class="kw">632:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">03</span>             cmp    $0x3,%rdi
+...
+ <span class="kw">638:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">04</span>             cmp    $0x4,%rdi
+...
+ <span class="kw">63e:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">05</span>             cmp    $0x5,%rdi</code></pre></td></tr></table></div>
+<hr />
+<p>Enter the elegance and efficiency of the <code class="sourceCode c"><span class="cf">switch</span></code> statement:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="dt">void</span> func(<span class="dt">unsigned</span> <span class="dt">long</span> a) {
+        <span class="cf">switch</span>(a) {
+                <span class="cf">case</span> <span class="dv">1</span>:
+                        a1();
+                        <span class="cf">break</span>;
+                <span class="cf">case</span> <span class="dv">2</span>:
+                        a2();
+                        <span class="cf">break</span>;
+                <span class="cf">case</span> <span class="dv">3</span>:
+                        a3();
+                        <span class="cf">break</span>;
+                <span class="cf">case</span> <span class="dv">4</span>:
+                        a4();
+                        <span class="cf">break</span>;
+                <span class="cf">case</span> <span class="dv">5</span>:
+                        a5();
+                        <span class="cf">break</span>;
+                <span class="cf">default</span>:
+                        <span class="cf">break</span>;
+        }
+}</code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"><span class="dv">0000000000000620</span> &lt;func&gt;<span class="kw">:</span>
+ <span class="kw">620:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">05</span>             cmp    $0x5,%rdi
+ <span class="kw">620:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">05</span>             cmp    $0x5,%rdi
+ <span class="kw">624:</span>   <span class="dv">77</span> 6a                   ja     <span class="dv">690</span> &lt;func+<span class="bn">0x70</span>&gt;
+ <span class="kw">626:</span>   <span class="dv">48</span> 8d <span class="dv">15</span> <span class="dv">67</span> <span class="dv">01</span> <span class="dv">00</span> <span class="dv">00</span>    lea    <span class="bn">0x167</span>(%rip),%rdx
+ <span class="kw">62d:</span>   <span class="dv">48</span> <span class="dv">83</span> ec <span class="dv">08</span>             sub    $0x8,%rsp
+ <span class="kw">631:</span>   <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba             movslq (%rdx,%rdi,<span class="dv">4</span>),%rax
+ <span class="kw">635:</span>   <span class="dv">48</span> <span class="dv">01</span> d0                add    %rdx,%rax
+ <span class="kw">638:</span>   ff e0                   jmpq   *%rax</code></pre></td></tr></table></div>
+<p>There is one and only <span class="italic">instruction</span> that is shared by <span class="bold">all</span> case labels:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"> <span class="dv">638</span>:   ff e0                   jmpq   *%rax</code></pre></td></tr></table></div>
+<p>Meaning, that no matter how convoluted and how many conditionals checking your <code class="sourceCode c"><span class="cf">switch</span></code> statements accounts for, it will all compile down to a shared, <span class="bold">one single</span> <span class="italic">instruction</span> that accounts for all the different <code class="sourceCode c"><span class="cf">case</span></code> labels.</p>
+<p>So, we investigate:</p>
+<p>We have:</p>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"> <span class="dv">626</span>:   <span class="dv">48</span> 8d <span class="dv">15</span> <span class="dv">67</span> <span class="dv">01</span> <span class="dv">00</span> <span class="dv">00</span>    lea    <span class="bn">0x167</span>(%rip),%rdx</code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="er">#62d is start of the next instruction</span>
+$ printf &#39;%x\n&#39; $((<span class="bn">0x62d</span> + <span class="bn">0x167</span>))
+<span class="dv">794</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="dv">0000000000000790</span> &lt;_IO_stdin_used&gt;:
+ <span class="dv">790</span>:   <span class="dv">01</span> <span class="dv">00</span>                   add    %eax,(%rax)
+ <span class="dv">792</span>:   <span class="dv">02</span> <span class="dv">00</span>                   add    (%rax),%al
+ <span class="dv">794</span>:   b1 fe                   mov    $<span class="bn">0xfe</span>,%cl
+ <span class="dv">796</span>:   ff                      (bad)  
+ <span class="dv">797</span>:   ff cc                   dec    %esp
+ <span class="dv">799</span>:   fe                      (bad)  
+ 79a:   ff                      (bad)  
+ 79b:   ff                      (bad)  
+ 79c:   dc fe                   fdivr  %st,%st(<span class="dv">6</span>)
+ 79e:   ff                      (bad)  
+ 79f:   ff                      (bad)  
+ 7a0:   ec                      in     (%dx),%al
+ 7a1:   fe                      (bad)  
+ 7a2:   ff                      (bad)  
+ 7a3:   ff ac fe ff ff bc fe    ljmp   *-<span class="bn">0x1430001</span>(%rsi,%rdi,<span class="dv">8</span>)
+ 7aa:   ff                      (bad)  
+ 7ab:   ff                      .byte <span class="bn">0xff</span></code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">0</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;0&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffeb1 + 0x794<span class="va">))</span>
+<span class="ex">645</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">645:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">647:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">64b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">1</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;1&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffecc + 0x794<span class="va">))</span>
+<span class="ex">660</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">660:</span>   e8 3b <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  6a0 &lt;a1&gt;
+ <span class="kw">665:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">667:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">66b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">2</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;2&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffedc + 0x794<span class="va">))</span>
+<span class="ex">670</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">670:</span>   e8 3b <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  6b0 &lt;a2&gt;
+ <span class="kw">675:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">677:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">67b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">3</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;3&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffeec + 0x794<span class="va">))</span>
+<span class="ex">680</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">680:</span>   e8 3b <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  6c0 &lt;a3&gt;
+ <span class="kw">685:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">687:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">68b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">4</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;4&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffeac + 0x794<span class="va">))</span>
+<span class="ex">640</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">640:</span>   e8 8b <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  6d0 &lt;a4&gt;
+ <span class="kw">645:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">647:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">64b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+<p>Calculating &quot;<code class="sourceCode gnuassembler"><span class="kw">631:</span> <span class="dv">48</span> <span class="dv">63</span> <span class="dv">04</span> ba   movslq (%rdx,%rdi,<span class="dv">4</span>),%rax</code>&quot; - when <code class="sourceCode c">%rdi</code> == <span class="bold">5</span></p>
+<div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co"># case &#39;5&#39;</span>
+<span class="bu">printf</span> <span class="st">&#39;%x\n&#39;</span> <span class="va">$((</span>0xfffffffffffffebc + 0x794<span class="va">))</span>
+<span class="ex">650</span></code></pre></td></tr></table></div>
+<div class="sourceCode"><table class="sourceCode s numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler"> <span class="kw">650:</span>   e8 8b <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>          callq  6e0 &lt;a5&gt;
+ <span class="kw">655:</span>   <span class="dv">31</span> c0                   xor    %eax,%eax
+ <span class="kw">657:</span>   <span class="dv">48</span> <span class="dv">83</span> c4 <span class="dv">08</span>             add    $0x8,%rsp
+ <span class="kw">65b:</span>   c3                      retq   </code></pre></td></tr></table></div>
+</body>
+</html>
