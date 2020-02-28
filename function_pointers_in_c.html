@@ -65,6 +65,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   font-size:80%;
   color:gray;
   }
+  .menu {
+  text-decoration:none;
+  font-size:120%;
+  }
   .href {
   text-decoration:none;
   font-variant:small-caps;
@@ -97,16 +101,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   </style>
 </head>
 <body>
-<h2 id="function-pointers-in-c-edit-wiki-report-a-bug-table-of-contents">Function pointers in c <a href="https://github.com/paul-brian-software-build/c/edit/master/function_pointers_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
-<p>Function pointers are very useful for <span class="italic">generic programming</span> in c.</p>
-<p>A typical example is the qsort() prototype in libc:</p>
+<h2 id="function-pointers-in-c-edit-wiki-report-a-bug-table-of-contents-about">Function pointers in c <a href="https://github.com/paul-brian-software-build/c/edit/master/function_pointers_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[About]</a></h2>
+<p>Function pointers are very useful for <span class="italic">generic programming</span> in c. <span id="topic1"></span> A typical example is the qsort() prototype in libc:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">extern</span> <span class="dt">void</span> qsort(<span class="dt">void</span> *__base, <span class="dt">size_t</span> __nmemb, <span class="dt">size_t</span> __size, __compar_fn_t __compar) __nonnull((<span class="dv">1</span>, <span class="dv">4</span>));</code></pre></td></tr></table></div>
 <p>Where <code class="sourceCode c">__compar_fn_t</code> is defined as:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">typedef</span> <span class="dt">int</span> (*__compar_fn_t) (<span class="dt">const</span> <span class="dt">void</span> *, <span class="dt">const</span> <span class="dt">void</span> *);</code></pre></td></tr></table></div>
 <p>By providing a callback function <code class="sourceCode c">__compar_fn_t</code> to the <code class="sourceCode c">qsort()</code> function, you can pass in any data structure you can imagine, be it a <span class="italic">scalar</span> or an <span class="italic">aggregate</span> type, specifying its size and the number of elements and have it sorted.</p>
-<p>Another example is the revolutionary unix convention that <span class="italic">everything is a file</span>, that allows you to <code class="sourceCode c">read()</code> , <code class="sourceCode c">write()</code> etc. to and from a <span class="italic">regular</span> file as well as a <span class="italic">pipe</span> or a <span class="italic">socket</span> and so on, by allowing any file-system that implements that following (and more) file-pointers to assume the functionality of a &quot;normal&quot; file-system.</p>
+<p><span id="topic2"></span> Another example is the revolutionary unix convention that <span class="italic">everything is a file</span>, that allows you to <code class="sourceCode c">read()</code> , <code class="sourceCode c">write()</code> etc. to and from a <span class="italic">regular</span> file as well as a <span class="italic">pipe</span> or a <span class="italic">socket</span> and so on, by allowing any file-system that implements that following (and more) file-pointers to assume the functionality of a &quot;normal&quot; file-system.</p>
 <p>From <span class="bold">include/linux/fs.h</span>:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
@@ -188,7 +191,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
         <span class="dt">ssize_t</span> (*dedupe_file_range)(<span class="kw">struct</span> file *, u64, u64, <span class="kw">struct</span> file *,
                         u64);
 } __randomize_layout;</code></pre></td></tr></table></div>
-<p>One of the pitfalls of a function-pointers is the very important distinction between the <span class="italic">fucntion</span> itself and its <span class="italic">pointer</span></p>
+<p><span id="topic3"></span> One of the pitfalls of a function-pointers is the very important distinction between the <span class="italic">fucntion</span> itself and its <span class="italic">pointer</span></p>
 <p>There is a major difference between:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
@@ -199,7 +202,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 2
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="co">// Valid pointer to a main() fucntion</span>
 <span class="kw">typedef</span> <span class="dt">int</span> (*main_p)(<span class="dt">int</span> argc, <span class="dt">char</span> **argv);</code></pre></td></tr></table></div>
-<p>Let's take for example, the following 2 files.</p>
+<p><span id="topic4"></span> Let's take for example, the following 2 files.</p>
 <p>We will compile <span class="italic">main.c</span> and <span class="italic">func.c</span>, where <code class="sourceCode c">main()</code> will call <code class="sourceCode c">g()</code> defined in <span class="italic">func.c</span> and declared in <span class="italic">main.c</span>.</p>
 <p>We will first use the wrong declaration for a pointer to <code class="sourceCode c">g()</code>.</p>
 <p><span class="bold">main.c</span>:</p>
@@ -308,7 +311,7 @@ $ <span class="ex">objdump</span> -d a.out <span class="kw">|</span> <span class
  <span class="kw">580:</span>   c3                      retq   </code></pre></td></tr></table></div>
 <p>No longer is it a relative offset to g, but it is an indirect absolute address at g.</p>
 <p>Which is exactly the definition a pointer function.</p>
-<p>The same logic applies to array pointers, in the following concepts</p>
+<p><span id="topic5"></span> The same logic applies to array pointers, in the following concepts</p>
 <ul>
 <li>array pointers, i.e. a pointer to an array</li>
 <li>array of pointers</li>
@@ -345,7 +348,7 @@ line = table;</code></pre></td></tr></table></div>
 main.c: error: invalid initializer
   array_t line = table[<span class="dv">0</span>];
                  ^~~~~</code></pre></td></tr></table></div>
-<p>A more intricate example from <span class="caps">ansi c (3.5.4.3 &quot;Function declarators&quot;)</span>:</p>
+<p><span id="topic6"></span> A more intricate example from <span class="caps">ansi c (3.5.4.3 &quot;Function declarators&quot;)</span>:</p>
 <div style="white-space: pre-line;">        <code class="sourceCode c"><span class="dt">int</span> (*fpfi(<span class="dt">int</span> (*)(<span class="dt">long</span>), <span class="dt">int</span>))(<span class="dt">int</span>, ...);</code></div>
 <p>Here we have a function type definition <span class="italic">fpfi</span>, which:</p>
 <ul>

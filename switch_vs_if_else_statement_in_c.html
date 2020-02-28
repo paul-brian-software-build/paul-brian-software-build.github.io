@@ -65,6 +65,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   font-size:80%;
   color:gray;
   }
+  .menu {
+  text-decoration:none;
+  font-size:120%;
+  }
   .href {
   text-decoration:none;
   font-variant:small-caps;
@@ -97,13 +101,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   </style>
 </head>
 <body>
-<h2 id="switch-vs-if-else-conditionals-in-c-edit-wiki-report-a-bug-table-of-contents">Switch vs if-else conditionals in C <a href="https://github.com/paul-brian-software-build/c/edit/master/switch_vs_if_else_statement_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
-<p>From <span class="caps">ansi c 3.6.4.2 &quot;The switch statement&quot;</span></p>
+<h2 id="switch-vs-if-else-conditionals-in-c-edit-wiki-report-a-bug-table-of-contents-about">Switch vs if-else conditionals in C <a href="https://github.com/paul-brian-software-build/c/edit/master/switch_vs_if_else_statement_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[About]</a></h2>
+<p><span id="topic1"></span> From <span class="caps">ansi c 3.6.4.2 &quot;The switch statement&quot;</span></p>
 <blockquote>
 <p><span class="caps">&quot;The controlling expression of a switch statement shall have integral type. The expression of each case label shall be an <span class="bold">integral constant expression</span>. No two of the case constant expressions in the same switch statement shall have the same value after conversion. There may be at most one default label in a switch statement. (Any enclosed switch statement may have a default label or case constant expressions with values that duplicate case constant expressions in the enclosing switch statement.)&quot;</span></p>
 </blockquote>
 <p>While very limiting, the restriction on constant type expression in <code class="sourceCode c"><span class="cf">case</span></code> labels for the <code class="sourceCode c"><span class="cf">switch</span></code> statements in C, guarantees a huge performance boost for the compiled program.</p>
-<p>The following if-else statement:</p>
+<p><span id="topic2"></span> The following if-else statement:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
 3
@@ -189,6 +193,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ...
  <span class="kw">63e:</span>   <span class="dv">48</span> <span class="dv">83</span> ff <span class="dv">05</span>             cmp    $0x5,%rdi</code></pre></td></tr></table></div>
 <hr />
+<p><span id="topic3"></span></p>
 <p>Enter the elegance and efficiency of the <code class="sourceCode c"><span class="cf">switch</span></code> statement:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
@@ -254,7 +259,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"> <span class="dv">638</span>:   ff e0                   jmpq   *%rax</code></pre></td></tr></table></div>
 <p>Meaning, that no matter how convoluted and how many conditionals checking your <code class="sourceCode c"><span class="cf">switch</span></code> statements accounts for, it will all compile down to a shared, <span class="bold">one single</span> <span class="italic">instruction</span> that accounts for all the different <code class="sourceCode c"><span class="cf">case</span></code> labels.</p>
-<p>So, we investigate:</p>
+<p><span id="topic4"></span> So, we investigate:</p>
 <p>We have:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"> <span class="dv">626</span>:   <span class="dv">48</span> 8d <span class="dv">15</span> <span class="dv">67</span> <span class="dv">01</span> <span class="dv">00</span> <span class="dv">00</span>    lea    <span class="bn">0x167</span>(%rip),%rdx</code></pre></td></tr></table></div>

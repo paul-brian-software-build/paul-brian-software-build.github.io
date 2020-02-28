@@ -65,6 +65,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   font-size:80%;
   color:gray;
   }
+  .menu {
+  text-decoration:none;
+  font-size:120%;
+  }
   .href {
   text-decoration:none;
   font-variant:small-caps;
@@ -97,8 +101,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   </style>
 </head>
 <body>
-<h2 id="stack-trace-edit-wiki-report-a-bug-table-of-contents">Stack Trace <a href="https://github.com/paul-brian-software-build/c/edit/master/stack_trace.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a></h2>
-<p>From <span class="caps">gcc Version 7.3.0 manual</span>:</p>
+<h2 id="stack-trace-edit-wiki-report-a-bug-table-of-contents-about">Stack Trace <a href="https://github.com/paul-brian-software-build/c/edit/master/stack_trace.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[About]</a></h2>
+<p><span id="topic1"></span> From <span class="caps">gcc Version 7.3.0 manual</span>:</p>
 <div class="sourceCode"><table class="sourceCode man numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
 3
@@ -129,7 +133,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
      Enabled at levels &#39;-O&#39;, &#39;-O2&#39;, &#39;-O3&#39;, &#39;-Os&#39;.</code></pre></td></tr></table></div>
 <p>The <span class="italic">stack-frame-pointer</span> is a life-saver when chasing after elusive bugs, espeically when the execution path is not straight-forward.</p>
 <p>Be it, recursive functions or unexpected jumps, dumping the stack frame, helps to visualize, as well as profile the weakest links in your program.</p>
-<p>A very simple example, is tracing file redirection in <code class="sourceCode bash"><span class="fu">sh</span></code>.</p>
+<p><span id="topic2"></span> A very simple example, is tracing file redirection in <code class="sourceCode bash"><span class="fu">sh</span></code>.</p>
 <div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode bash">$ <span class="fu">sh</span> -c <span class="st">&#39;exec &gt;/tmp/output&#39;</span></code></pre></td></tr></table></div>
 <p>We get the following call-trace, where the stack grows downward.</p>
@@ -160,7 +164,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 2
 </pre></td><td class="sourceCode"><pre><code class="sourceCode gnuassembler">  <span class="kw">40ec5c:</span>       e8 bf fa ff ff          callq  40e720 &lt;openredirect&gt;
   <span class="kw">40ec61:</span>       <span class="dv">83</span> f8 ff                cmp    $0xffffffff,%eax</code></pre></td></tr></table></div>
-<p>For a more useful example, we demonstrate one of the many pitfalls in <span class="italic">posix</span> shells:</p>
+<p><span id="topic3"></span> For a more useful example, we demonstrate one of the many pitfalls in <span class="italic">posix</span> shells:</p>
 <div class="sourceCode"><table class="sourceCode sh numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 2
 3
@@ -183,7 +187,7 @@ $ <span class="bu">echo</span> <span class="st">&#39;var is: &#39;&quot;</span><
 $ <span class="bu">echo</span> <span class="st">&#39;var is: &#39;&quot;</span><span class="va">$var</span><span class="st">&quot;</span>
 <span class="ex">var</span> is:</code></pre></td></tr></table></div>
 <p>The striking similiarity between sub-shells and pipes, is evident.</p>
-<p>Let see the respective dumps of the processes envolved, where each dump is headed by each process id, <span class="italic">pid</span>.</p>
+<p><span id="topic4"></span> Let see the respective dumps of the processes envolved, where each dump is headed by each process id, <span class="italic">pid</span>.</p>
 <p>We shell explore the similarity between sub-shells and pipes:</p>
 <p>Stack trace for &quot;<code class="sourceCode bash"><span class="kw">{</span> <span class="va">var=</span>value; <span class="fu">true</span><span class="kw">;</span> <span class="kw">}</span> <span class="kw">|</span> <span class="fu">true</span></code>&quot;:</p>
 <div class="sourceCode"><table class="sourceCode S numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
