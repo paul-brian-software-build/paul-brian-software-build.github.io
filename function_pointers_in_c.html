@@ -47,23 +47,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   blockquote {
   margin-right:40%;
   }
-  .edit {
+  .edit, .issues, .toc {
   text-decoration:none;
-  font-variant:small-caps;
-  font-size:80%;
-  color:gray;
+  color:blue;
+  font-family:monospace;
+  /*font-variant:small-caps;*/
+  font-size:130%;
   }
   .issues {
-  text-decoration:none;
-  font-variant:small-caps;
-  font-size:80%;
-  color:gray;
   }
   .toc {
-  text-decoration:none;
-  font-variant:small-caps;
-  font-size:80%;
-  color:gray;
   }
   .menu {
   text-decoration:none;
@@ -101,7 +94,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   </style>
 </head>
 <body>
-<h2 id="function-pointers-in-c-edit-wiki-report-a-bug-table-of-contents-about">Function pointers in c <a href="https://github.com/paul-brian-software-build/c/blob/master/function_pointers_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[About]</a></h2>
+<p><a href="https://github.com/paul-brian-software-build/c/blob/master/function_pointers_in_c.md" class="edit">[edit wiki]</a> <a href="https://github.com/paul-brian-software-build/c/issues" class="issues">[report a bug]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[Table of Contents]</a> <a href="https://paul-brian-software-build.github.io" class="toc">[About]</a>  </p>
+<h1 id="function-pointers-in-c">Function pointers in c</h1>
 <p>Function pointers are very useful for <span class="italic">generic programming</span> in c. <span id="topic1"></span> A typical example is the qsort() prototype in libc:</p>
 <div class="sourceCode"><table class="sourceCode c numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
 </pre></td><td class="sourceCode"><pre><code class="sourceCode c"><span class="kw">extern</span> <span class="dt">void</span> qsort(<span class="dt">void</span> *__base, <span class="dt">size_t</span> __nmemb, <span class="dt">size_t</span> __size, __compar_fn_t __compar) __nonnull((<span class="dv">1</span>, <span class="dv">4</span>));</code></pre></td></tr></table></div>
